@@ -20,7 +20,8 @@ const getCurrentUserId = () => {
     }
     return userId
   }
-  return 'user_demo'
+  // Fallback for server-side rendering or production issues
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
 }
 
 export default function MyListingsPage() {

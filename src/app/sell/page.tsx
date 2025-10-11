@@ -21,7 +21,8 @@ const getCurrentUserId = () => {
     }
     return userId
   }
-  return 'user_demo'
+  // Fallback for server-side rendering or production issues
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
 }
 
 interface ProductForm {
@@ -164,6 +165,10 @@ export default function SellPage() {
         }
       }
       
+      // Ensure we have a valid user ID
+      const finalUserId = userId || getCurrentUserId()
+      console.log('Using seller_id:', finalUserId)
+      
       // Add product to database
       await addProduct({
         name: formData.name,
@@ -172,7 +177,7 @@ export default function SellPage() {
         stock_quantity: 1, // For rental items, typically 1
         category: formData.category,
         images: imageUrls,
-        seller_id: userId,
+        seller_id: finalUserId,
         contact_number: formData.contactNumber,
         additional_details: formData.additionalDetails
       })

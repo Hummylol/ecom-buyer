@@ -12,7 +12,8 @@ const getCurrentUserId = () => {
     }
     return userId
   }
-  return 'user_demo'
+  // Fallback for server-side rendering
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
 }
 
 export interface CartItem {
@@ -186,6 +187,12 @@ export const useProductsStore = create<ProductsStore>()((set, get) => ({
   },
 
   addProduct: async (productData) => {
+    // Validate required fields
+    if (!productData.seller_id) {
+      console.error('Missing seller_id in product data:', productData)
+      throw new Error('Seller ID is required')
+    }
+    
     // Check if Supabase is configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url_here') {
       console.log('Supabase not configured, saving to local storage...')

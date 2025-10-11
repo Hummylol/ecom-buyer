@@ -16,6 +16,7 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [rentalPeriod, setRentalPeriod] = useState('daily')
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const { addItem } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
@@ -53,17 +54,35 @@ export default function ProductPage() {
       // Simulate adding to cart
       await new Promise(resolve => setTimeout(resolve, 500))
       
+      // Calculate price based on rental period
+      let finalPrice = product.price
+      let periodText = 'day'
+      
+      switch (rentalPeriod) {
+        case 'weekly':
+          finalPrice = product.price * 7 * 0.8 // 20% discount
+          periodText = 'week'
+          break
+        case 'monthly':
+          finalPrice = product.price * 30 * 0.7 // 30% discount
+          periodText = 'month'
+          break
+        default:
+          finalPrice = product.price
+          periodText = 'day'
+      }
+      
       for (let i = 0; i < quantity; i++) {
         addItem({
           id: product.id,
           product_id: product.id,
-          title: product.name,
-          price: product.price,
+          title: `${product.name} (${rentalPeriod} rental)`,
+          price: finalPrice,
           image: product.images[0] || '/placeholder.svg'
         })
       }
       setIsAddingToCart(false)
-      toast.success(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart`)
+      toast.success(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart (${rentalPeriod} rental)`)
     }
   }
 
@@ -214,10 +233,81 @@ export default function ProductPage() {
                 </p>
               </div>
               
+              {/* Additional Rental Options */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-semibold text-blue-900 mb-3">Additional Rental Options</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="text-sm text-blue-700 mb-1">Weekly Rate</div>
+                    <div className="text-lg font-bold text-blue-900">
+                      ₹{(product.price * 7 * 0.8).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-blue-600">Save 20%</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="text-sm text-blue-700 mb-1">Monthly Rate</div>
+                    <div className="text-lg font-bold text-blue-900">
+                      ₹{(product.price * 30 * 0.7).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-blue-600">Save 30%</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border border-blue-100">
+                    <div className="text-sm text-blue-700 mb-1">Security Deposit</div>
+                    <div className="text-lg font-bold text-blue-900">
+                      ₹{(product.price * 2).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-blue-600">Refundable</div>
+                  </div>
+                </div>
+                <div className="mt-3 text-xs text-blue-700">
+                  💡 Longer rental periods offer better value. Security deposit is fully refundable upon return.
+                </div>
+              </div>
+              
               <p className="text-gray-700 leading-relaxed text-lg">{product.description}</p>
             </div>
 
             <div className="space-y-6">
+              {/* Rental Period Selection */}
+              <div>
+                <span className="text-lg font-medium text-gray-700 mb-3 block">Rental Period:</span>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setRentalPeriod('daily')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      rentalPeriod === 'daily'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="font-medium">Daily</div>
+                    <div className="text-xs opacity-75">₹{product.price.toFixed(2)}/day</div>
+                  </button>
+                  <button
+                    onClick={() => setRentalPeriod('weekly')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      rentalPeriod === 'weekly'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="font-medium">Weekly</div>
+                    <div className="text-xs opacity-75">₹{(product.price * 7 * 0.8).toFixed(2)}/week</div>
+                  </button>
+                  <button
+                    onClick={() => setRentalPeriod('monthly')}
+                    className={`p-3 rounded-lg border text-center transition-colors ${
+                      rentalPeriod === 'monthly'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="font-medium">Monthly</div>
+                    <div className="text-xs opacity-75">₹{(product.price * 30 * 0.7).toFixed(2)}/month</div>
+                  </button>
+                </div>
+              </div>
+
               <div className="flex items-center space-x-4">
                 <span className="text-lg font-medium text-gray-700">Quantity:</span>
                 <div className="flex items-center border rounded-lg">
@@ -242,6 +332,32 @@ export default function ProductPage() {
                 <span className="text-sm text-gray-500">
                   {product.stock_quantity} available
                 </span>
+              </div>
+
+              {/* Total Price Display */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-medium text-gray-700">Total Price:</span>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600">
+                      ₹{(() => {
+                        let totalPrice = product.price * quantity
+                        switch (rentalPeriod) {
+                          case 'weekly':
+                            totalPrice = product.price * 7 * 0.8 * quantity
+                            break
+                          case 'monthly':
+                            totalPrice = product.price * 30 * 0.7 * quantity
+                            break
+                        }
+                        return totalPrice.toFixed(2)
+                      })()}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      for {quantity} {quantity === 1 ? 'item' : 'items'} ({rentalPeriod})
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="flex space-x-4">
