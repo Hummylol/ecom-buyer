@@ -124,10 +124,10 @@ export default function CartPage() {
                             {item.title}
                           </h3>
                           <p className="text-lg sm:text-xl font-bold text-gray-900">
-                            ${item.price.toFixed(2)}
+                            ₹{item.price.toFixed(2)}
                           </p>
                           <p className="text-sm text-gray-500">
-                            ${item.price.toFixed(2)} each
+                            ₹{item.price.toFixed(2)} each
                           </p>
                         </div>
                         
@@ -158,7 +158,7 @@ export default function CartPage() {
                           {/* Total and Remove */}
                           <div className="text-right">
                             <p className="text-lg font-bold text-gray-900">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              ₹{(item.price * item.quantity).toFixed(2)}
                             </p>
                             <Button
                               variant="ghost"
@@ -192,7 +192,7 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span>Subtotal ({items.reduce((total, item) => total + item.quantity, 0)} items)</span>
-                    <span className="font-semibold">${getTotalPrice().toFixed(2)}</span>
+                    <span className="font-semibold">₹{getTotalPrice().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
@@ -200,14 +200,14 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span className="font-semibold">$0.00</span>
+                    <span className="font-semibold">₹0.00</span>
                   </div>
                 </div>
                 
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span>${getTotalPrice().toFixed(2)}</span>
+                    <span>₹{getTotalPrice().toFixed(2)}</span>
                   </div>
                 </div>
 

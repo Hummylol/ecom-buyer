@@ -5,8 +5,7 @@ import { ArrowLeft, ShoppingCart, Star, Heart, Share2, Truck, Shield, RotateCcw 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useCartStore, useWishlistStore } from '@/lib/store'
-import { supabase, Product } from '@/lib/supabase'
+import { useCartStore, useWishlistStore, useProductsStore, Product } from '@/lib/store'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,6 +19,7 @@ export default function ProductPage() {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const { addItem } = useCartStore()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore()
+  const { fetchProducts, products } = useProductsStore()
   const params = useParams()
 
   useEffect(() => {
@@ -30,14 +30,16 @@ export default function ProductPage() {
 
   const fetchProduct = async (id: string) => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error) throw error
-      setProduct(data)
+      // First try to find in local state
+      let foundProduct = products.find(p => p.id === id)
+      
+      // If not found, fetch from database
+      if (!foundProduct) {
+        await fetchProducts()
+        foundProduct = products.find(p => p.id === id)
+      }
+      
+      setProduct(foundProduct || null)
     } catch (error) {
       console.error('Error fetching product:', error)
     } finally {
@@ -205,14 +207,11 @@ export default function ProductPage() {
               
               <div className="flex items-baseline space-x-3 mb-6">
                 <p className="text-4xl font-bold text-green-600">
-                  ${product.price.toFixed(2)}
+                  ₹{product.price.toFixed(2)}
                 </p>
-                <p className="text-lg text-gray-500 line-through">
-                  ${(product.price * 1.2).toFixed(2)}
+                <p className="text-sm text-gray-500">
+                  per day
                 </p>
-                <Badge className="bg-red-100 text-red-800">
-                  Save 20%
-                </Badge>
               </div>
               
               <p className="text-gray-700 leading-relaxed text-lg">{product.description}</p>
@@ -275,27 +274,27 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* Features */}
+            {/* Rental Features */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="flex items-center space-x-3 p-4 bg-green-50 rounded-lg">
                 <Truck className="h-6 w-6 text-green-600" />
                 <div>
-                  <p className="font-semibold text-green-900">Free Shipping</p>
-                  <p className="text-sm text-green-700">On orders over $50</p>
+                  <p className="font-semibold text-green-900">Pickup Available</p>
+                  <p className="text-sm text-green-700">Flexible pickup options</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
                 <Shield className="h-6 w-6 text-blue-600" />
                 <div>
-                  <p className="font-semibold text-blue-900">Secure Payment</p>
-                  <p className="text-sm text-blue-700">100% secure checkout</p>
+                  <p className="font-semibold text-blue-900">Secure Rental</p>
+                  <p className="text-sm text-blue-700">Safe and reliable service</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 p-4 bg-purple-50 rounded-lg">
                 <RotateCcw className="h-6 w-6 text-purple-600" />
                 <div>
-                  <p className="font-semibold text-purple-900">Easy Returns</p>
-                  <p className="text-sm text-purple-700">30-day return policy</p>
+                  <p className="font-semibold text-purple-900">Easy Return</p>
+                  <p className="text-sm text-purple-700">Convenient return process</p>
                 </div>
               </div>
             </div>
@@ -312,18 +311,24 @@ export default function ProductPage() {
                     <p className="font-medium capitalize">{product.category}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Stock</span>
-                    <p className="font-medium">{product.stock_quantity} available</p>
+                    <span className="text-gray-600">Availability</span>
+                    <p className="font-medium">{product.stock_quantity > 0 ? 'Available' : 'Unavailable'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">SKU</span>
-                    <p className="font-medium">{product.id.slice(0, 8)}</p>
+                    <span className="text-gray-600">Contact</span>
+                    <p className="font-medium">{product.contact_number}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Condition</span>
-                    <p className="font-medium">New</p>
+                    <span className="text-gray-600">Listed</span>
+                    <p className="font-medium">{new Date(product.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
+                {product.additional_details && (
+                  <div>
+                    <span className="text-gray-600">Additional Details</span>
+                    <p className="font-medium mt-1">{product.additional_details}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -332,3 +337,4 @@ export default function ProductPage() {
     </div>
   )
 }
+

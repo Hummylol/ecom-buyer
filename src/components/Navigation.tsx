@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, ShoppingCart, Heart, Menu, User } from 'lucide-react'
+import { Search, ShoppingCart, Heart, Menu, User, Plus, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +45,12 @@ export default function Navigation({ searchTerm, setSearchTerm }: NavigationProp
 
           {/* Desktop Navigation */}
           <div className="md:flex  items-center space-x-4">
+            <Link href="/sell">
+              <Button variant="ghost" size="sm">
+                <Plus className="h-5 w-5" />
+                <span className="hidden sm:inline ml-1">Sell</span>
+              </Button>
+            </Link>
             <Link href="/wishlist">
               <Button variant="ghost" size="sm" className="relative">
                 <Heart className="h-5 w-5" />
@@ -98,6 +104,12 @@ export default function Navigation({ searchTerm, setSearchTerm }: NavigationProp
         {showMobileMenu && (
           <div className="md:hidden border-t bg-white">
             <div className="px-4 py-4 space-y-4">
+              <Link href="/sell" className="block">
+                <Button variant="ghost" size="sm" className="w-full">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Sell Product
+                </Button>
+              </Link>
               <div className="flex items-center space-x-4">
                 <Link href="/wishlist" className="flex-1">
                   <Button variant="ghost" size="sm" className="w-full relative">
@@ -122,6 +134,12 @@ export default function Navigation({ searchTerm, setSearchTerm }: NavigationProp
                   </Button>
                 </Link>
               </div>
+              <Link href="/my-listings" className="block">
+                <Button variant="ghost" size="sm" className="w-full">
+                  <List className="h-5 w-5 mr-2" />
+                  My Listings
+                </Button>
+              </Link>
               <Button variant="ghost" size="sm" className="w-full">
                 <User className="h-5 w-5 mr-2" />
                 Account

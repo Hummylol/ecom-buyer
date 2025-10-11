@@ -4,8 +4,7 @@ import { Heart, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Product } from '@/lib/supabase'
-import { useWishlistStore } from '@/lib/store'
+import { useWishlistStore, Product } from '@/lib/store'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -87,7 +86,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         <div className="flex items-center justify-between">
           <div>
             <p className="text-2xl font-bold text-green-600">
-              ${product.price.toFixed(2)}
+              ₹{product.price.toFixed(2)}
             </p>
             <p className="text-sm text-gray-500">
               {product.stock_quantity} in stock

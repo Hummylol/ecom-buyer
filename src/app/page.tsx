@@ -1,56 +1,62 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Filter, Search } from 'lucide-react'
+import { Filter, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useCartStore } from '@/lib/store'
-import { supabase, Product } from '@/lib/supabase'
+import { Input } from '@/components/ui/input'
+import { useCartStore, useProductsStore, Product } from '@/lib/store'
 import Navigation from '@/components/Navigation'
 import ProductCard from '@/components/ProductCard'
 import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [loading, setLoading] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' })
+  const [sortBy, setSortBy] = useState('newest')
   const { addItem } = useCartStore()
+  const { fetchProducts, products, loading } = useProductsStore()
 
   const categories = ['all', 'electronics', 'clothing', 'books', 'home', 'sports', 'beauty', 'toys']
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+  }, [fetchProducts])
 
-  const fetchProducts = async () => {
-    try {
-      // Check if Supabase is configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url_here') {
-        // Use sample data for demonstration
-        setLoading(false)
-        return
+  // Refresh products when page becomes visible (e.g., when returning from sell page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchProducts()
       }
-
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setProducts(data || [])
-    } catch (error) {
-      console.error('Error fetching products:', error)
-      // Fallback to sample data
-    } finally {
-      setLoading(false)
     }
-  }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [fetchProducts])
+
+  // Remove the local fetchProducts function since we're using the store's fetchProducts
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesPriceMin = !priceRange.min || product.price >= parseFloat(priceRange.min)
+    const matchesPriceMax = !priceRange.max || product.price <= parseFloat(priceRange.max)
+    return matchesSearch && matchesCategory && matchesPriceMin && matchesPriceMax
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price
+      case 'price-high':
+        return b.price - a.price
+      case 'name':
+        return a.name.localeCompare(b.name)
+      case 'newest':
+      default:
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    }
   })
 
   const handleAddToCart = (product: Product) => {
@@ -97,12 +103,80 @@ export default function Home() {
             {selectedCategory === 'all' ? 'All Products' : `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Products`}
           </h2>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
           </div>
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="bg-white border rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Filters</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFilters(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price Range (₹)
+                </label>
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Min"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange({...priceRange, min: e.target.value})}
+                    type="number"
+                  />
+                  <Input
+                    placeholder="Max"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({...priceRange, max: e.target.value})}
+                    type="number"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sort By
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="name">Name: A to Z</option>
+                </select>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPriceRange({ min: '', max: '' })
+                    setSortBy('newest')
+                  }}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
