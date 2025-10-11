@@ -40,12 +40,11 @@ export default function MyListingsPage() {
     try {
       // Fetch all products from database
       await fetchProducts()
-      // Get products for the current user
-      const myProducts = getMyProducts(currentUserId)
-      setMyProducts(myProducts)
+      // Get ALL products (not just current user's)
+      setMyProducts(products)
     } catch (error) {
-      console.error('Error fetching my products:', error)
-      toast.error('Failed to load your listings')
+      console.error('Error fetching products:', error)
+      toast.error('Failed to load listings')
     } finally {
       setLoading(false)
     }
@@ -95,7 +94,7 @@ export default function MyListingsPage() {
                   Back to Shop
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900 ml-4">My Listings</h1>
+              <h1 className="text-2xl font-bold text-gray-900 ml-4">All Listings</h1>
             </div>
           </div>
         </header>
@@ -106,7 +105,7 @@ export default function MyListingsPage() {
               <Calendar className="h-16 w-16 text-gray-300" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">No listings yet</h2>
-            <p className="text-lg text-gray-500 mb-8">Start earning by listing your items for rent</p>
+            <p className="text-lg text-gray-500 mb-8">No products have been listed yet</p>
             <Link href="/sell">
               <Button size="lg" className="bg-black hover:bg-gray-800 text-white">
                 List Your First Product
@@ -130,7 +129,7 @@ export default function MyListingsPage() {
                   Back to Shop
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900 ml-4">My Listings</h1>
+              <h1 className="text-2xl font-bold text-gray-900 ml-4">All Listings</h1>
             </div>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -144,7 +143,7 @@ export default function MyListingsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-900">
-            Manage your rental listings
+            Manage all rental listings
           </h2>
           <Link href="/sell">
             <Button className="bg-black hover:bg-gray-800 text-white">
@@ -170,7 +169,7 @@ export default function MyListingsPage() {
                 </div>
                 <div className="absolute top-2 right-2">
                   <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    Listed
+                    Active
                   </Badge>
                 </div>
               </div>
@@ -194,6 +193,9 @@ export default function MyListingsPage() {
                     <p className="text-sm text-gray-500">Listed on</p>
                     <p className="text-sm font-medium">
                       {formatDate(product.created_at)}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      by {product.seller_id}
                     </p>
                   </div>
                 </div>
@@ -232,13 +234,13 @@ export default function MyListingsPage() {
 
         {myProducts.length > 0 && (
           <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">💡 Tips for better listings</h4>
+            <h4 className="font-medium text-blue-900 mb-2">📊 Listing Management</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Use high-quality photos with good lighting</li>
-              <li>• Write detailed descriptions including condition and features</li>
-              <li>• Set competitive pricing based on market rates</li>
-              <li>• Respond quickly to rental inquiries</li>
-              <li>• Keep your contact information up to date</li>
+              <li>• View all products listed on the platform</li>
+              <li>• Remove any listings that are no longer available</li>
+              <li>• Edit functionality coming soon</li>
+              <li>• Contact information is displayed for each listing</li>
+              <li>• All listings are sorted by creation date (newest first)</li>
             </ul>
           </div>
         )}

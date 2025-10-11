@@ -137,7 +137,7 @@ export default function Navigation({ searchTerm, setSearchTerm }: NavigationProp
               <Link href="/my-listings" className="block">
                 <Button variant="ghost" size="sm" className="w-full">
                   <List className="h-5 w-5 mr-2" />
-                  My Listings
+                  All Listings
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" className="w-full">
